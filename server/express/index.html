@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Server Test</title>
+  </head>
+
+  <body>
+    <button id="refresh-users-btn">Refresh Users</button>
+    <section id="list-users"></section>
+    <button id="refresh-tickets-btn">Refresh Tickets</button>
+    <section id="list-tickets"></section>
+  </body>
+
+  <script type="module">
+    const signUp = async (user) => {
+      const res = await fetch("http://localhost:5000/api/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(user),
+      });
+
+      const data = await res.json();
+
+      if (data.error) console.log("Failed to sign up user", data.error);
+    };
+
+    const getUsers = async () => {
+      const res = await fetch("http://localhost:5000/api/users");
+
+      const data = await res.json();
+
+      if (data.error) {
+        console.log("Failed to get users", data.error);
+
+        return;
+      }
+
+      return data.data;
+    };
+
+    const updateUserById = async (id, updates) => {
+      const res = await fetch(`http://localhost:5000/api/users/${id}/update`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ updates }),
+      });
+
+      const data = await res.json();
+
+      if (data.error) {
+        console.log("Failed to update user:", data.error);
+
+        return;
+      }
+
+      const index = users.findIndex((user) => user.email === data.user.email);
+
+      users.splice(index, 1, data.user);
+    };
+
+    const promoteUser = async (adminId, userId, role) => {
+      const res = await fetch("http://localhost:5000/api/users/promote", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          requesterId: adminId,
+          targetId: userId,
+          newRole: role,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (result.error) console.log("Failed to promote user", result.error);
+    };
+
+    const createTicket = async (ticket) => {
+      const res = await fetch("http://localhost:5000/api/tickets/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ticket }),
+      });
+
+      const result = await res.json();
+
+      if (result.error) {
+        console.log("Failed to create ticket: ", result.error);
+
+        return;
+      }
+
+      return { data: result.data };
+    };
+
+    const getTickets = async () => {
+      const res = await fetch("http://localhost:5000/api/tickets");
+
+      const data = await res.json();
+
+      return { data };
+    };
+
+    const getTicketsCreatedByUser = async (id) => {
+      const res = await fetch(`http://localhost:5000/api/tickets/user/${id}`);
+
+      const result = await res.json();
+
+      if (result.error) {
+        console.log(
+          `Could not fetch tickets created by user ${id}`,
+          result.error
+        );
+
+        return;
+      }
+
+      return { data: result.data };
+    };
+
+    const updateTicket = async (id, updates) => {
+      const res = await fetch(
+        `http://localhost:5000/api/tickets/${id}/update`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ updates }),
+        }
+      );
+    };
+
+    const users = [];
+    const tickets = [];
+
+    const userList = document.getElementById("list-users");
+    const refreshUsersBtn = document.getElementById("refresh-users-btn");
+
+    const ticketList = document.getElementById("list-tickets");
+    const refreshTicketsBtn = document.getElementById("refresh-tickets-btn");
+
+    const user1 = {
+      fullName: "Phakamile Mlala",
+      email: "phakamilemlala1613@gmail.com",
+      id: "1",
+      role: "admin",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      phone: "263782490911",
+      department: "management",
+      password: "admin123",
+    };
+
+    const user2 = {
+      fullName: "Passion Mlala",
+      email: "passionmlala@gmail.com",
+      id: "2",
+      role: "field_engineer",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      phone: "263713000001",
+      department: "field",
+      password: "engineer123",
+    };
+
+    const user3 = {
+      fullName: "File Potato",
+      email: "phaksmlala@gmail.com",
+      id: "3",
+      role: "field_engineer",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      phone: "263713000001",
+      department: "field",
+      password: "engineer123",
+    };
+
+    await signUp(user1);
+
+    await signUp(user2);
+
+    await signUp(user3);
+
+    await updateUserById("2", {
+      fullName: "Passion The Great",
+    });
+
+    await promoteUser("1", "2", "supervisor");
+
+    const data = await getUsers();
+    users.length = 0;
+    users.push(...data);
+
+    const mockTickets = [
+      {
+        id: "1",
+        ticketNumber: "TKT-001",
+        title: "Air Conditioning Unit Repair",
+        description:
+          "HVAC unit in Building A is not cooling properly. Temperature readings show 28°C when should be 22°C.",
+        type: "maintenance",
+        priority: "high",
+        status: "open",
+        createdBy: "1",
+        assignedTo: "3",
+        location: "Building A - Floor 2",
+        createdAt: new Date("2024-01-15T09:00:00Z"),
+        updatedAt: new Date("2024-01-15T09:00:00Z"),
+        assignedAt: new Date("2025-0-6-15T17:00:00Z"),
+        dueDate: new Date("2024-01-17T17:00:00Z"),
+        estimatedHours: 4,
+        actualHours: 0,
+        notes: "Customer reports room too warm since yesterday",
+        createdByProfile: user1,
+        assignedToProfile: user3,
+        equipment: {
+          id: "1",
+          name: "HVAC Unit A-2",
+          type: "air_conditioning",
+          model: "Carrier 30XA",
+          serialNumber: "CAR-2024-001",
+          location: "Building A - Floor 2",
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      },
+      {
+        id: "2",
+        ticketNumber: "TKT-002",
+        title: "Elevator Inspection",
+        description: "Monthly safety inspection for elevator in Building B",
+        type: "inspection",
+        priority: "medium",
+        status: "in_progress",
+        createdBy: "2",
+        assignedTo: "3",
+        verifiedBy: null,
+        equipmentId: "2",
+        location: "Building B - Lobby",
+        createdAt: new Date("2024-01-14T10:30:00Z"),
+        updatedAt: new Date("2024-01-15T08:30:00Z"),
+        assignedAt: new Date("2025-0-6-15T17:00:00Z"),
+        dueDate: new Date("2024-01-16T15:00:00Z"),
+        estimatedHours: 2,
+        actualHours: 1.5,
+        notes: "Routine monthly inspection as per safety regulations",
+        createdByProfile: user2,
+        assignedToProfile: user3,
+        equipment: {
+          id: "2",
+          name: "Elevator B-1",
+          type: "elevator",
+          model: "Otis Gen2",
+          serialNumber: "OTIS-2023-002",
+          location: "Building B - Lobby",
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      },
+      {
+        id: "3",
+        ticketNumber: "TKT-003",
+        title: "Fire Safety System Check",
+        description: "Quarterly fire safety system inspection and testing",
+        type: "inspection",
+        priority: "high",
+        status: "resolved",
+        createdBy: "1",
+        assignedTo: "3",
+        verifiedBy: "2",
+        equipmentId: "3",
+        location: "Building C - All Floors",
+        createdAt: new Date("2024-01-10T14:00:00Z"),
+        updatedAt: new Date("2024-01-12T16:30:00Z"),
+        assignedAt: new Date("2024-01-10T14:30:00Z"),
+        resolvedAt: new Date("2024-01-12T15:00:00Z"),
+        verifiedAt: new Date("2024-01-12T16:30:00Z"),
+        dueDate: new Date("2024-01-15T17:00:00Z"),
+        estimatedHours: 6,
+        actualHours: 5.5,
+        notes:
+          "All systems functioning properly. Minor sensor calibration performed.",
+        createdByProfile: user1,
+        assignedToProfile: user3,
+        verifiedByProfile: user2,
+        equipment: {
+          id: "3",
+          name: "Fire Safety System C",
+          type: "fire_safety",
+          model: "Honeywell FS90",
+          serialNumber: "HON-2023-003",
+          location: "Building C - All Floors",
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      },
+    ];
+
+    mockTickets.forEach((ticket) => {
+      createTicket(ticket);
+    });
+
+    refreshTicketsBtn.addEventListener("click", async (e) => {
+      tickets.length = 0;
+
+      const { data } = await getTickets();
+
+      tickets.push(...data);
+
+      ticketList.innerHTML = "";
+
+      tickets.forEach((ticket) => {
+
+        const createdBy = users.find(user => user.id === ticket.createdBy)?.fullName;
+
+        const p = document.createElement("p");
+
+        p.textContent = `No: ${ticket.ticketNumber}  Title: ${ticket.title} Created By: ${createdBy}`;
+
+        ticketList.appendChild(p);
+      });
+    });
+
+    refreshUsersBtn.addEventListener("click", async (e) => {
+      users.length = 0;
+
+      const data = await getUsers();
+
+      users.push(...data);
+
+      userList.innerHTML = "";
+
+      users.forEach((user) => {
+        const p = document.createElement("p");
+        p.textContent = `Name: ${user.fullName}  Email: ${user.email}  Role: ${user.role}`;
+
+        userList.appendChild(p);
+      });
+
+    });
+  </script>
+</html>

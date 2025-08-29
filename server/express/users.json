@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1756328012579",
+    "email": "phakamilemlala1613@gmail.com",
+    "fullName": "Phakamile Mlala",
+    "role": "admin",
+    "department": "field",
+    "phone": "26378000000",
+    "isActive": true,
+    "createdAt": "2025-08-27T20:53:32.579Z",
+    "updatedAt": "2025-08-27T20:53:32.579Z",
+    "password": "admin123"
+  },
+  {
+    "id": "1756386125874",
+    "email": "noob@gmail.com",
+    "fullName": "The Great Noobie",
+    "role": "field_engineer",
+    "department": "field",
+    "phone": "263780000001",
+    "isActive": true,
+    "createdAt": "2025-08-28T13:02:05.874Z",
+    "updatedAt": "2025-08-28T13:02:05.874Z",
+    "password": "noob1234"
+  }
+]
